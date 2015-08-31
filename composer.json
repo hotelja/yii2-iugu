@@ -1,0 +1,22 @@
+{
+    "name": "hotelja/yii2-iugu",
+    "description": "https://iugu.com/referencias/api",
+    "type": "yii2-extension",
+    "keywords": ["yii2","extension","iugu"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "hotelja.com",
+            "email": "contato@hotelja.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "*",
+        "hotelja/iugu-php": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "hotelja\\iugu\\": ""
+        }
+    }
+}
