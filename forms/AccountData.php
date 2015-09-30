@@ -4,7 +4,7 @@ namespace hotelja\iugu\services;
 use yiibr\brvalidator\CpfValidator;
 use yiibr\brvalidator\CnpjValidator;
 
-class AccountData extends \yii\base\Model
+class AccountData extends \hotelja\iugu\Form
 {
     public $price_range;
     public $physical_products=false;

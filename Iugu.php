@@ -1,11 +1,12 @@
 <?php
-
 namespace hotelja\iugu;
 /**
  * This is just an example.
  */
 class Iugu extends \yii\base\Component
 {
+    const MODE_TEST='TEST';
+
     public $url='https://api.iugu.com/v1/';
     public $token;
     public $timeout=10;
@@ -15,7 +16,7 @@ class Iugu extends \yii\base\Component
      */
     public function get($service,$params=[])
     {
-        return $this->request($service,$params,'DELETE');
+        return $this->request('GET',$service,$params);
     }
 
     /**
@@ -23,7 +24,7 @@ class Iugu extends \yii\base\Component
      */
     public function post($service,$params=[])
     {
-        return $this->request($service,$params,'DELETE');
+        return $this->request('POST',$service,$params);
     }
 
     /**
@@ -31,7 +32,7 @@ class Iugu extends \yii\base\Component
      */
     public function put($service,$params=[])
     {
-        return $this->request($service,$params,'DELETE');
+        return $this->request('PUT',$service,$params);
     }
 
     /**
@@ -39,53 +40,72 @@ class Iugu extends \yii\base\Component
      */
     public function delete($service,$params=[])
     {
-        return $this->request($service,$params,'DELETE');
+        return $this->request('DELETE',$service,$params);
     }
 
     /**
+     * @param string $type request type, 'GET', 'POST', 'PUT' or 'DELETE'
+     * @param string $service service name, ex: 'accounts'
+     * @param array $params params to send, ex: ['name'=>'test']
      * @return stdClass
      */
-    public function request($service,$params,$type)
+    public function request($type,$service,$params=[])
     {
         if(empty($this->token) || empty($this->url))
             throw new Exception('Invalid "token" or "url"');
         $url=rtrim($this->url,'/').'/'.$service;
         $type=strtoupper($type);
         $ch=curl_init($url);
-        curl_setopt($ch, CURLOPT_HEADER, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout)
+        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         if($type==='GET')
         {
-            curl_setopt($ch, CURLOPT_URL, $url.'?'.http_build_query($params));
+            curl_setopt($ch, CURLOPT_URL, $url.($params!==[] ? '?'.http_build_query($params) : ''));
         }
         else
         {
             if($type==='POST')
-                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POST, true);
             else
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $type);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params,'','&'));
         }
 
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type:application/json',
-            'Authorization: Basic '.$this->token,
-        ]);
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->token.":");
+        if(YII_DEBUG)
+            curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         try{
-            $result=curl_exec($ch);
+            $response=curl_exec($ch);
         }catch(Exception $e){}
 
-        $this->_httpCode=curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if(curl_errno($ch)!==0)
+            return false;
+
+        $info=curl_getinfo($ch);
+        $this->_httpCode=$info['http_code'];
         curl_close($ch);
-        try{
-            $result=json_decode($result);
-        }catch(Exception $e){}
-
-        if($result)
-            return (object)$result;
-        return $result;
+        if(strpos($info['content_type'],'application/json')===0)
+        {
+            $response=json_decode($response);
+            if(YII_DEBUG)
+            {
+                \Yii::info($this->_httpCode.':'.PHP_EOL.
+                    print_r($info,true).PHP_EOL.
+                    print_r($response,true).PHP_EOL
+                ,'iugu');
+            }
+            return (object)$response;
+        }
+        if(YII_DEBUG)
+        {
+            \Yii::info($this->_httpCode.':'.PHP_EOL.
+                print_r($info,true).PHP_EOL.
+                $response.PHP_EOL
+            ,'iugu');
+        }
+        return false;
     }
 
     /**

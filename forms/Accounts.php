@@ -1,7 +1,7 @@
 <?php
 namespace hotelja\iugu\services;
 
-class Accounts extends \hotelja\iugu\Service
+class Accounts extends \hotelja\iugu\Form
 {
     public $data;
     public $files;

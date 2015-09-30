@@ -1,7 +1,7 @@
 <?php
 namespace hotelja\iugu\services;
 
-class Marketplace extends \hotelja\iugu\Service
+class Marketplace extends \hotelja\iugu\Form
 {
     public $name;
     public $commission_percent;
@@ -12,10 +12,5 @@ class Marketplace extends \hotelja\iugu\Service
             [['commission_percent'],'double',],
             ['automatic_transfer','boolean'],
         ];
-    }
-
-    public function createAccount()
-    {
-        return $this->post('create_account');
     }
 }

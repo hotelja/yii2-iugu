@@ -5,7 +5,7 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 use yii\web\HttpException;
-abstract class Service extends \yii\base\Model
+abstract class Form extends \yii\base\Model
 {
     /**
      * Returns the component used by this service class.
